@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>防骗模拟器</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #22252b;
+      --muted: #667085;
+      --paper: #f7f2e8;
+      --panel: #ffffff;
+      --line: #ded6c9;
+      --green: #1f7a5a;
+      --green-dark: #12543d;
+      --red: #b83d3d;
+      --amber: #c47a1c;
+      --blue: #315c96;
+      --shadow: 0 18px 50px rgba(34, 37, 43, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Microsoft YaHei", "PingFang SC", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        linear-gradient(135deg, rgba(31, 122, 90, 0.12), transparent 34%),
+        linear-gradient(315deg, rgba(184, 61, 61, 0.12), transparent 30%),
+        var(--paper);
+      color: var(--ink);
+    }
+
+    .wrap {
+      width: min(980px, calc(100vw - 28px));
+      min-height: 100vh;
+      margin: 0 auto;
+      display: grid;
+      place-items: center;
+      padding: 24px 0;
+    }
+
+    .app {
+      width: 100%;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.76);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow);
+    }
+
+    .bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--green);
+      color: #fff;
+      font-size: 24px;
+      font-weight: 900;
+    }
+
+    h1,
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .audience-tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border: 1px solid rgba(31, 122, 90, 0.26);
+      border-radius: 999px;
+      background: #eef7f2;
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .sub {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      min-width: 96px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      font-weight: 800;
+      text-align: center;
+      color: var(--green-dark);
+    }
+
+    .main {
+      padding: clamp(22px, 5vw, 46px);
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 270px;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .hero h2 {
+      max-width: 620px;
+      font-size: clamp(32px, 6vw, 58px);
+      line-height: 1.06;
+      letter-spacing: 0;
+    }
+
+    .hero p,
+    .ending p {
+      margin-top: 18px;
+      color: #4b5565;
+      font-size: 20px;
+      line-height: 1.8;
+    }
+
+    .notice {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 18px;
+    }
+
+    .notice strong {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--green-dark);
+      font-size: 18px;
+    }
+
+    .notice p {
+      color: #4b5565;
+      font-size: 17px;
+      line-height: 1.8;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    button {
+      min-height: 52px;
+      border: 0;
+      border-radius: 8px;
+      padding: 0 20px;
+      font: inherit;
+      font-size: 18px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 150ms ease, box-shadow 150ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(34, 37, 43, 0.15);
+    }
+
+    button:focus-visible {
+      outline: 3px solid rgba(31, 122, 90, 0.28);
+      outline-offset: 3px;
+    }
+
+    .primary {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .secondary {
+      background: #f0ece4;
+      color: var(--ink);
+    }
+
+    .scene-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 0 12px;
+      border-radius: 8px;
+      background: #f0ece4;
+      color: #5b4d3d;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .progress {
+      flex: 1 1 180px;
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #ebe3d7;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--green), var(--amber));
+      transition: width 220ms ease;
+    }
+
+    .dialogue {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .bubble {
+      max-width: 780px;
+      padding: 16px 18px;
+      border-radius: 8px;
+      line-height: 1.75;
+      font-size: clamp(19px, 3vw, 24px);
+    }
+
+    .bubble.system {
+      background: #f0ece4;
+      color: #554c43;
+    }
+
+    .bubble.other {
+      margin-left: auto;
+      background: #eef4fb;
+      border: 1px solid #d7e2f0;
+      color: #203b5c;
+    }
+
+    .bubble.self {
+      background: #eef7f2;
+      border: 1px solid #d3e7dd;
+      color: #173f30;
+    }
+
+    .question {
+      margin-bottom: 16px;
+      font-size: clamp(26px, 4vw, 38px);
+      line-height: 1.24;
+    }
+
+    .choices {
+      display: grid;
+      gap: 12px;
+    }
+
+    .choice {
+      width: 100%;
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 14px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      text-align: left;
+      padding: 15px 16px;
+    }
+
+    .choice span {
+      line-height: 1.55;
+    }
+
+    .choice.selected {
+      border-color: rgba(49, 92, 150, 0.45);
+      background: #eef4fb;
+      color: #203b5c;
+    }
+
+    .feedback {
+      min-height: 100px;
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #fffaf3;
+      color: #4f463a;
+      font-size: 18px;
+      line-height: 1.75;
+    }
+
+    .feedback.good {
+      border-color: rgba(31, 122, 90, 0.32);
+      background: #eef7f2;
+      color: #173f30;
+    }
+
+    .feedback.warn {
+      border-color: rgba(196, 122, 28, 0.35);
+      background: #fff7e8;
+      color: #65420e;
+    }
+
+    .feedback.bad {
+      border-color: rgba(184, 61, 61, 0.32);
+      background: #fff0f0;
+      color: #6b2020;
+    }
+
+    .feedback-block {
+      display: grid;
+      gap: 12px;
+    }
+
+    .feedback-block p {
+      margin: 0;
+    }
+
+    .feedback-block strong {
+      display: inline-block;
+      min-width: 78px;
+      color: inherit;
+    }
+
+    .ending {
+      max-width: 720px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .ending h2 {
+      font-size: clamp(34px, 6vw, 56px);
+      line-height: 1.08;
+    }
+
+    .score {
+      margin: 14px 0 8px;
+      color: var(--green);
+      font-size: clamp(64px, 14vw, 122px);
+      line-height: 1;
+      font-weight: 900;
+    }
+
+    .tips {
+      display: grid;
+      gap: 10px;
+      margin-top: 24px;
+      text-align: left;
+    }
+
+    .tip {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      line-height: 1.6;
+      font-size: 17px;
+    }
+
+    @media (max-width: 760px) {
+      .bar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .stats {
+        width: 100%;
+        justify-content: stretch;
+      }
+
+      .pill {
+        flex: 1 1 120px;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .notice {
+        order: -1;
+      }
+
+      .scene-top {
+        margin-bottom: 14px;
+      }
+
+      .dialogue {
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .bubble {
+        padding: 10px 12px;
+        font-size: 17px;
+        line-height: 1.55;
+      }
+
+      .question {
+        margin-bottom: 12px;
+        font-size: 23px;
+      }
+
+      .choice {
+        min-height: 60px;
+        padding: 12px 14px;
+      }
+    }
+
+    @media (max-width: 460px) {
+      .wrap {
+        width: min(100vw - 16px, 980px);
+        padding: 8px 0;
+      }
+
+      .main {
+        padding: 18px 12px;
+      }
+
+      .scene-top {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .choice {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="app" aria-live="polite">
+      <header class="bar">
+        <div class="brand">
+          <div class="logo">防</div>
+          <div>
+            <div class="title-row">
+              <h1>防骗模拟器</h1>
+              <span class="audience-tag">中老年生活场景版</span>
+            </div>
+            <p class="sub">用剧情练习识别日常消息里的风险</p>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="pill" id="scenePill">准备开始</div>
+        </div>
+      </header>
+
+      <div class="main">
+        <section class="screen active" id="startScreen">
+          <div class="hero">
+            <div>
+              <h2>手机响了，故事也开始了。</h2>
+              <p>你会遇到几个常见生活场景里的消息。先跟着情境做判断，结尾再看看哪些话术最容易让人放松警惕。</p>
+              <div class="actions">
+                <button class="primary" id="startBtn">开始模拟</button>
+                <button class="secondary" id="familyBtn">家庭共玩版</button>
+              </div>
+            </div>
+            <aside class="notice">
+              <strong>适合怎么用</strong>
+              <p>可以和家人朋友一起玩，每一关结束后聊一句：遇到类似情况时，先停下来，不转账，不给验证码。</p>
+            </aside>
+          </div>
+        </section>
+
+        <section class="screen" id="gameScreen">
+          <div class="scene-top">
+            <span class="tag" id="sceneTag">场景 1</span>
+            <div class="progress"><span id="progressBar"></span></div>
+          </div>
+          <div class="dialogue" id="dialogue"></div>
+          <h2 class="question" id="question"></h2>
+          <div class="choices" id="choices"></div>
+          <div class="feedback" id="feedback">做出选择后，这里会出现后续剧情和复盘。</div>
+          <div class="actions">
+            <button class="primary" id="nextBtn" disabled>继续</button>
+            <button class="secondary" id="restartBtn">重新开始</button>
+          </div>
+        </section>
+
+        <section class="screen" id="endScreen">
+          <div class="ending">
+            <h2 id="endTitle">模拟结束</h2>
+            <div class="score" id="finalScore">0</div>
+            <p id="endText"></p>
+            <div class="tips" id="tips"></div>
+            <div class="actions" style="justify-content: center;">
+              <button class="primary" id="againBtn">再玩一次</button>
+              <button class="secondary" id="homeBtn">回到首页</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const scenes = [
+      {
+        tag: "场景 1：快递退款电话",
+        dialogue: [
+          ["system", "下午 3 点，你刚准备出门买菜，手机响了。"],
+          ["other", "阿姨您好，我是快递客服。您的包裹丢失了，现在给您办理 198 元赔偿。"],
+          ["other", "麻烦打开微信，我发您一个链接，按提示填写银行卡和验证码。"]
+        ],
+        question: "这时候你会怎么做？",
+        choices: [
+          {
+            text: "你有点不放心，先挂电话，自己去购物软件里查订单。",
+            alert: 25,
+            risk: 0,
+            type: "good",
+            consequence: "电话那头还想继续解释，但你没有跟着他的节奏走。打开官方 App 后，你没有看到任何异常理赔通知。",
+            redFlag: "对方把“赔偿”和“验证码”放在一起，还要求你点陌生链接，这是典型风险信号。",
+            advice: "遇到退款、理赔、包裹异常，先从官方 App 或官方客服电话核实。"
+          },
+          {
+            text: "你担心赔偿过期，按对方提示点开链接，准备填写信息。",
+            alert: 0,
+            risk: 35,
+            type: "bad",
+            consequence: "页面看起来很正式，对方还不断催你“只差最后一步”。这时如果填入验证码，账户可能被直接操作。",
+            redFlag: "陌生链接、银行卡、验证码、催促操作同时出现，风险已经很高。",
+            advice: "验证码不要告诉任何人，也不要填进陌生页面。先退出页面，再联系官方渠道。"
+          },
+          {
+            text: "你让对方等一下，转头把情况发给家人确认。",
+            alert: 18,
+            risk: 5,
+            type: "good",
+            consequence: "对方语气变急，说“晚了就不能赔”。你没有马上操作，给自己留出了判断时间。",
+            redFlag: "越催你越要慢下来。诈骗话术常用“过期”“限时”“马上”制造压力。",
+            advice: "不确定时，先暂停，问家人、社区工作人员或官方客服。"
+          }
+        ]
+      },
+      {
+        tag: "场景 2：微信群养老理财",
+        dialogue: [
+          ["system", "晚上，老同学群里有人发来一张红色海报。"],
+          ["other", "内部养老项目，国家扶持，投 3000 元，每月返 360 元。名额只剩 6 个。"],
+          ["other", "今晚 10 点前转账，还送电饭锅。"]
+        ],
+        question: "你会怎么判断这个消息？",
+        choices: [
+          {
+            text: "你看到老同学说已经参加，心里也有点动，想先转 3000 元试试。",
+            alert: 0,
+            risk: 30,
+            type: "bad",
+            consequence: "群里不断有人发“到账截图”，管理员也催大家抓紧名额。越热闹，越容易让人放下警惕。",
+            redFlag: "稳定高收益、限时名额、熟人背书、先转账，这几个信号叠在一起非常危险。",
+            advice: "涉及投资和转账，不要只看群消息。先让家人一起核实主体、资质和资金去向。"
+          },
+          {
+            text: "你先问公司名称、资质和合同，想着资料齐全再决定。",
+            alert: 18,
+            risk: 8,
+            type: "warn",
+            consequence: "对方很快发来营业执照截图和合同模板，看起来像那么回事，但仍然要求你今晚前转账。",
+            redFlag: "证件截图可能伪造。只要核心动作仍是“限时转账”，风险没有解除。",
+            advice: "资料只能作为线索，不能替代核实。查官方平台、问社区或请家人帮忙交叉验证。"
+          },
+          {
+            text: "你没有转账，先截图保存，并提醒群友别急着跟。",
+            alert: 28,
+            risk: 0,
+            type: "good",
+            consequence: "群里有人说你太谨慎，但也有人开始私下问你是不是有问题。你把信息留了证据。",
+            redFlag: "养老、国家扶持、稳定返利这些词很容易让人安心，但不等于真实可靠。",
+            advice: "遇到疑似投资骗局，先保存截图，不转账，必要时咨询社区或反诈热线。"
+          }
+        ]
+      },
+      {
+        tag: "场景 3：免费鸡蛋讲座",
+        dialogue: [
+          ["system", "小区门口有人发传单，说第二天有健康讲座。"],
+          ["other", "到场免费领 20 个鸡蛋，还能测血压。专家会讲一种进口保健品，今天买一疗程送一疗程。"],
+          ["self", "邻居说她上次去了，确实领到了东西。"]
+        ],
+        question: "你准备怎么处理？",
+        choices: [
+          {
+            text: "你想去看看热闹，但决定不带银行卡，现场也不买东西。",
+            alert: 15,
+            risk: 10,
+            type: "warn",
+            consequence: "现场气氛很好，工作人员很热情，还说“今天不买就没优惠”。你确实更容易被氛围带动。",
+            redFlag: "免费礼品、专家讲座、限时优惠和健康焦虑连在一起，是常见推销链路。",
+            advice: "如果参加类似活动，最好有人陪同，不现场付款，回家后再冷静判断。"
+          },
+          {
+            text: "专家讲得很专业，你觉得身体最重要，准备先买三疗程。",
+            alert: 0,
+            risk: 30,
+            type: "bad",
+            consequence: "销售人员马上围过来，说你这个年龄正需要调理，还帮你算出“今天买最划算”。",
+            redFlag: "保健品不能替代药品。用“专家”“疗程”“限时折扣”推动大额购买，要特别小心。",
+            advice: "身体问题先问正规医院医生。任何现场大额消费，都先暂停一天。"
+          },
+          {
+            text: "你先不去，把传单拍下来，准备问问社区工作人员和家人。",
+            alert: 25,
+            risk: 0,
+            type: "good",
+            consequence: "社区工作人员提醒你，最近确实有人借健康讲座推销高价产品。你避开了一次现场诱导。",
+            redFlag: "免费福利本身不一定有问题，但背后如果连接到高价产品和现场付款，就要警惕。",
+            advice: "先核实主办方和活动目的，再决定是否参加。不要在现场做大额决定。"
+          }
+        ]
+      },
+      {
+        tag: "场景 4：短视频点赞兼职",
+        dialogue: [
+          ["system", "晚上刷短视频时，你收到一条私信。"],
+          ["other", "您好，招居家兼职。给指定视频点赞截图，一单 8 元，日结。"],
+          ["other", "先做三单免费的，后面进福利群，垫付越多返得越多。"]
+        ],
+        question: "你会怎么处理这个兼职邀请？",
+        choices: [
+          {
+            text: "你觉得只是点点赞，先做几单看看，反正不用出门。",
+            alert: 4,
+            risk: 24,
+            type: "bad",
+            consequence: "前几单对方真的给了小额佣金，群里也有人晒收益。等你放松警惕后，对方开始要求垫付更大金额。",
+            redFlag: "先小额返利建立信任，再引导垫资刷单，是刷单返利类诈骗的常见套路。",
+            advice: "所有要求垫资、充值、做任务返利的兼职，都先按诈骗处理。"
+          },
+          {
+            text: "你不点链接，只问对方公司名称、合同和结算方式。",
+            alert: 14,
+            risk: 10,
+            type: "warn",
+            consequence: "对方发来一堆截图，还说“大家都在做，你想太多了”。但始终绕不开进群和垫付。",
+            redFlag: "兼职如果没有正规招聘渠道，却要求进群、下载陌生 App、垫钱做任务，就不正常。",
+            advice: "判断兼职先看是否签正规合同、是否要你先付款。需要垫资的直接放弃。"
+          },
+          {
+            text: "你没有继续聊，截图后拉黑，并提醒朋友别接这种单。",
+            alert: 26,
+            risk: 0,
+            type: "good",
+            consequence: "对方很快换号继续群发类似消息。你没有给对方把你拉进任务群的机会。",
+            redFlag: "“点赞就赚钱”“日结”“福利群”“垫付返利”连在一起，风险非常高。",
+            advice: "看到刷单、点赞、关注返利，直接停止沟通，不下载对方指定的软件。"
+          }
+        ]
+      },
+      {
+        tag: "场景 5：机票退改签来电",
+        dialogue: [
+          ["system", "出差前一天，你接到一个陌生电话。"],
+          ["other", "您好，您明天的航班因机械故障取消，可办理 300 元补偿。"],
+          ["other", "现在需要您下载会议软件，我远程指导您验证银行卡流水。"]
+        ],
+        question: "这个电话听起来很急，你会怎么做？",
+        choices: [
+          {
+            text: "你担心耽误行程，按对方要求下载会议软件，准备共享屏幕。",
+            alert: 0,
+            risk: 34,
+            type: "bad",
+            consequence: "共享屏幕后，对方可以看到你的短信、银行卡页面和支付操作。补偿还没拿到，账户已经暴露在风险里。",
+            redFlag: "退改签、补偿、会议软件、屏幕共享、银行卡流水，是高危组合。",
+            advice: "航班信息只通过航空公司官方 App、客服电话或购票平台核实。不要共享屏幕。"
+          },
+          {
+            text: "你先挂断电话，打开航空公司 App 和购票平台核实航班状态。",
+            alert: 28,
+            risk: 0,
+            type: "good",
+            consequence: "官方页面显示航班正常。刚才的电话只是利用你出行前的焦虑制造紧迫感。",
+            redFlag: "真正的退改签不会要求你共享屏幕、刷流水或提供验证码。",
+            advice: "任何航班变动，都先查官方渠道。陌生来电只当作提醒，不当作操作入口。"
+          },
+          {
+            text: "你继续听，但拒绝下载软件，要求对方把通知发到购票平台。",
+            alert: 20,
+            risk: 5,
+            type: "good",
+            consequence: "对方开始转移话题，说平台会延迟，让你别错过补偿。你没有进入对方指定流程。",
+            redFlag: "只要对方坚持让你离开官方平台操作，就说明风险在升高。",
+            advice: "把所有操作留在官方平台内完成，不接受陌生人远程指导。"
+          }
+        ]
+      },
+      {
+        tag: "场景 6：自动扣费客服",
+        dialogue: [
+          ["system", "午休时，你接到一个自称平台客服的电话。"],
+          ["other", "您的账号开通了直播会员，每月自动扣 800 元。现在可以帮您取消。"],
+          ["other", "需要您配合验证身份，我发一个链接，按提示关闭扣费协议。"]
+        ],
+        question: "你会怎么应对这个“取消扣费”？",
+        choices: [
+          {
+            text: "你被 800 元吓了一跳，准备点链接赶紧取消。",
+            alert: 0,
+            risk: 32,
+            type: "bad",
+            consequence: "链接页面会让你填写身份证、银行卡和验证码。所谓“取消扣费”，变成了套取账户信息。",
+            redFlag: "用高额扣费吓你，再引导点链接和填验证码，是冒充客服诈骗的常见话术。",
+            advice: "取消会员或扣费协议，只从官方 App 的账户设置、支付软件扣费管理里操作。"
+          },
+          {
+            text: "你不点链接，自己打开支付软件查看有没有自动扣费协议。",
+            alert: 26,
+            risk: 0,
+            type: "good",
+            consequence: "你在官方扣费管理里没有看到这项协议。对方制造的恐慌没有得逞。",
+            redFlag: "真正的平台客服不会要求你在陌生链接里提交银行卡和验证码。",
+            advice: "涉及扣费，自己打开官方 App 查，不顺着电话里的链接走。"
+          },
+          {
+            text: "你让对方报出你的订单号和账号信息，自己先不操作。",
+            alert: 16,
+            risk: 8,
+            type: "warn",
+            consequence: "对方能说出一些模糊信息，但无法在官方消息里同步通知你，反而继续催你马上处理。",
+            redFlag: "骗子可能掌握部分个人信息。能说出一点信息，不代表对方可信。",
+            advice: "不要在电话里完成身份验证。挂断后从官方入口重新进入客服。"
+          }
+        ]
+      }
+    ];
+
+    const screens = {
+      start: document.querySelector("#startScreen"),
+      game: document.querySelector("#gameScreen"),
+      end: document.querySelector("#endScreen")
+    };
+    const scenePill = document.querySelector("#scenePill");
+    const sceneTag = document.querySelector("#sceneTag");
+    const progressBar = document.querySelector("#progressBar");
+    const dialogue = document.querySelector("#dialogue");
+    const question = document.querySelector("#question");
+    const choices = document.querySelector("#choices");
+    const feedback = document.querySelector("#feedback");
+    const nextBtn = document.querySelector("#nextBtn");
+    const endTitle = document.querySelector("#endTitle");
+    const finalScore = document.querySelector("#finalScore");
+    const endText = document.querySelector("#endText");
+    const tipsBox = document.querySelector("#tips");
+
+    let index = 0;
+    let alertScore = 0;
+    let riskScore = 0;
+    let answered = false;
+
+    function show(name) {
+      Object.values(screens).forEach((screen) => screen.classList.remove("active"));
+      screens[name].classList.add("active");
+    }
+
+    function reset() {
+      index = 0;
+      alertScore = 0;
+      riskScore = 0;
+      updateStats();
+      show("game");
+      renderScene();
+    }
+
+    function updateStats() {
+      scenePill.textContent = index < scenes.length ? `第 ${index + 1} / ${scenes.length} 个场景` : "复盘结果";
+    }
+
+    function goHome() {
+      index = 0;
+      scenePill.textContent = "准备开始";
+      show("start");
+    }
+
+    function renderScene() {
+      const scene = scenes[index];
+      answered = false;
+      nextBtn.disabled = true;
+      window.scrollTo(0, 0);
+      screens.game.scrollIntoView({ block: "start" });
+      sceneTag.textContent = scene.tag;
+      updateStats();
+      progressBar.style.width = `${(index / scenes.length) * 100}%`;
+      question.textContent = scene.question;
+      feedback.className = "feedback";
+      feedback.textContent = "做出选择后，这里会出现后续剧情和复盘。";
+      dialogue.innerHTML = "";
+      choices.innerHTML = "";
+
+      scene.dialogue.forEach(([type, text]) => {
+        const bubble = document.createElement("div");
+        bubble.className = `bubble ${type}`;
+        bubble.textContent = text;
+        dialogue.appendChild(bubble);
+      });
+
+      scene.choices.forEach((choice) => {
+        const button = document.createElement("button");
+        button.className = "choice";
+        button.innerHTML = `<span>${choice.text}</span>`;
+        button.addEventListener("click", () => choose(choice, button));
+        choices.appendChild(button);
+      });
+    }
+
+    function choose(choice, selectedButton) {
+      if (answered) return;
+      answered = true;
+      alertScore += choice.alert;
+      riskScore += choice.risk;
+
+      [...choices.querySelectorAll("button")].forEach((button) => {
+        button.disabled = true;
+      });
+      selectedButton.classList.add("selected");
+
+      feedback.className = `feedback ${choice.type}`;
+      feedback.innerHTML = `
+        <div class="feedback-block">
+          <p><strong>剧情后果</strong>${choice.consequence}</p>
+          <p><strong>风险识别</strong>${choice.redFlag}</p>
+          <p><strong>下次做法</strong>${choice.advice}</p>
+        </div>
+      `;
+      nextBtn.disabled = false;
+    }
+
+    function next() {
+      if (index < scenes.length - 1) {
+        index += 1;
+        renderScene();
+        return;
+      }
+      progressBar.style.width = "100%";
+      renderEnd();
+    }
+
+    function renderEnd() {
+      show("end");
+      index = scenes.length;
+      updateStats();
+      window.scrollTo(0, 0);
+      screens.end.scrollIntoView({ block: "start" });
+      const total = Math.max(0, alertScore - riskScore);
+      finalScore.textContent = `${total}`;
+
+      if (riskScore >= 55) {
+        endTitle.textContent = "容易被催促影响";
+        endText.textContent = `你的警觉值 ${alertScore}，风险值 ${riskScore}。这次最容易被“限时、赔偿、专家”这些话术带着走。`;
+      } else if (total >= 55) {
+        endTitle.textContent = "稳健守门员";
+        endText.textContent = `你的警觉值 ${alertScore}，风险值 ${riskScore}。你很擅长在关键时刻停下来核实，没有被对方节奏牵着走。`;
+      } else {
+        endTitle.textContent = "需要先暂停再判断";
+        endText.textContent = `你的警觉值 ${alertScore}，风险值 ${riskScore}。你已经能发现一些不对劲，但遇到熟人背书或健康焦虑时还可以更慢一点。`;
+      }
+
+      tipsBox.innerHTML = "";
+      const personalTips = riskScore >= 55
+        ? [
+          "先记住一句话：越催你，越要挂断或离开现场。",
+          "验证码、银行卡、转账这三件事，只要出现一个就先停。",
+          "遇到投资、理赔、保健品，先问家人或官方渠道，不在当场决定。"
+        ]
+        : total >= 55
+          ? [
+            "继续保持先核实再操作的习惯。",
+            "也可以把这套判断方法讲给家人：不点陌生链接，不说验证码，不急着转账。",
+            "看到群里有人转发投资或福利消息，先保存证据，再提醒别人慢一点。"
+          ]
+          : [
+            "遇到熟人群消息，也不要默认可靠，账号可能被盗，截图也可能伪造。",
+            "健康讲座和免费礼品不一定危险，但现场推销大额产品时要先离开。",
+            "给自己设一个规则：任何需要付款的决定，至少隔一天再说。"
+          ];
+
+      personalTips.forEach((tip) => {
+        const item = document.createElement("div");
+        item.className = "tip";
+        item.textContent = tip;
+        tipsBox.appendChild(item);
+      });
+    }
+
+    document.querySelector("#startBtn").addEventListener("click", reset);
+    document.querySelector("#familyBtn").addEventListener("click", reset);
+    document.querySelector("#restartBtn").addEventListener("click", reset);
+    document.querySelector("#nextBtn").addEventListener("click", next);
+    document.querySelector("#againBtn").addEventListener("click", reset);
+    document.querySelector("#homeBtn").addEventListener("click", goHome);
+  </script>
+</body>
+</html>
