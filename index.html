@@ -148,6 +148,7 @@
 
     .screen.active {
       display: block;
+      animation: screenIn 220ms ease-out both;
     }
 
     .hero {
@@ -279,6 +280,7 @@
       border-radius: 8px;
       line-height: 1.75;
       font-size: clamp(19px, 3vw, 24px);
+      animation: bubbleIn 260ms ease-out both;
     }
 
     .bubble.system {
@@ -322,6 +324,7 @@
       color: var(--ink);
       text-align: left;
       padding: 15px 16px;
+      animation: choiceIn 240ms ease-out both;
     }
 
     .choice span {
@@ -332,6 +335,7 @@
       border-color: rgba(49, 92, 150, 0.45);
       background: #eef4fb;
       color: #203b5c;
+      animation: selectedPulse 260ms ease-out both;
     }
 
     .feedback {
@@ -364,6 +368,10 @@
       color: #6b2020;
     }
 
+    .feedback.revealed {
+      animation: feedbackIn 260ms ease-out both;
+    }
+
     .feedback-block {
       display: grid;
       gap: 12px;
@@ -377,6 +385,73 @@
       display: inline-block;
       min-width: 78px;
       color: inherit;
+    }
+
+    @keyframes screenIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes bubbleIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes choiceIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes feedbackIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes selectedPulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.01);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 1ms !important;
+      }
     }
 
     .ending {
@@ -892,13 +967,15 @@
       scene.dialogue.forEach(([type, text]) => {
         const bubble = document.createElement("div");
         bubble.className = `bubble ${type}`;
+        bubble.style.animationDelay = `${dialogue.children.length * 90}ms`;
         bubble.textContent = text;
         dialogue.appendChild(bubble);
       });
 
-      scene.choices.forEach((choice) => {
+      scene.choices.forEach((choice, choiceIndex) => {
         const button = document.createElement("button");
         button.className = "choice";
+        button.style.animationDelay = `${260 + choiceIndex * 70}ms`;
         button.innerHTML = `<span>${choice.text}</span>`;
         button.addEventListener("click", () => choose(choice, button));
         choices.appendChild(button);
@@ -916,7 +993,7 @@
       });
       selectedButton.classList.add("selected");
 
-      feedback.className = `feedback ${choice.type}`;
+      feedback.className = `feedback ${choice.type} revealed`;
       feedback.innerHTML = `
         <div class="feedback-block">
           <p><strong>剧情后果</strong>${choice.consequence}</p>
