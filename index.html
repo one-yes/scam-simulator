@@ -148,7 +148,7 @@
 
     .screen.active {
       display: block;
-      animation: screenIn 220ms ease-out both;
+      animation: screenIn 420ms ease-out both;
     }
 
     .hero {
@@ -280,7 +280,7 @@
       border-radius: 8px;
       line-height: 1.75;
       font-size: clamp(19px, 3vw, 24px);
-      animation: bubbleIn 260ms ease-out both;
+      animation: bubbleIn 560ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
     }
 
     .bubble.system {
@@ -324,7 +324,7 @@
       color: var(--ink);
       text-align: left;
       padding: 15px 16px;
-      animation: choiceIn 240ms ease-out both;
+      animation: choiceIn 460ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
     }
 
     .choice span {
@@ -335,7 +335,7 @@
       border-color: rgba(49, 92, 150, 0.45);
       background: #eef4fb;
       color: #203b5c;
-      animation: selectedPulse 260ms ease-out both;
+      animation: selectedPulse 420ms ease-out both;
     }
 
     .feedback {
@@ -369,7 +369,8 @@
     }
 
     .feedback.revealed {
-      animation: feedbackIn 260ms ease-out both;
+      overflow: hidden;
+      animation: feedbackIn 520ms cubic-bezier(0.2, 0.85, 0.25, 1) both;
     }
 
     .feedback-block {
@@ -390,7 +391,7 @@
     @keyframes screenIn {
       from {
         opacity: 0;
-        transform: translateY(8px);
+        transform: translateY(14px);
       }
       to {
         opacity: 1;
@@ -401,7 +402,7 @@
     @keyframes bubbleIn {
       from {
         opacity: 0;
-        transform: translateY(10px) scale(0.98);
+        transform: translateY(22px) scale(0.96);
       }
       to {
         opacity: 1;
@@ -412,7 +413,7 @@
     @keyframes choiceIn {
       from {
         opacity: 0;
-        transform: translateY(8px);
+        transform: translateY(18px);
       }
       to {
         opacity: 1;
@@ -423,10 +424,12 @@
     @keyframes feedbackIn {
       from {
         opacity: 0;
-        transform: translateY(8px);
+        max-height: 0;
+        transform: translateY(16px);
       }
       to {
         opacity: 1;
+        max-height: 520px;
         transform: translateY(0);
       }
     }
@@ -436,7 +439,7 @@
         transform: scale(1);
       }
       50% {
-        transform: scale(1.01);
+        transform: scale(1.025);
       }
       100% {
         transform: scale(1);
@@ -967,7 +970,7 @@
       scene.dialogue.forEach(([type, text]) => {
         const bubble = document.createElement("div");
         bubble.className = `bubble ${type}`;
-        bubble.style.animationDelay = `${dialogue.children.length * 90}ms`;
+        bubble.style.animationDelay = `${dialogue.children.length * 220}ms`;
         bubble.textContent = text;
         dialogue.appendChild(bubble);
       });
@@ -975,7 +978,7 @@
       scene.choices.forEach((choice, choiceIndex) => {
         const button = document.createElement("button");
         button.className = "choice";
-        button.style.animationDelay = `${260 + choiceIndex * 70}ms`;
+        button.style.animationDelay = `${760 + choiceIndex * 150}ms`;
         button.innerHTML = `<span>${choice.text}</span>`;
         button.addEventListener("click", () => choose(choice, button));
         choices.appendChild(button);
